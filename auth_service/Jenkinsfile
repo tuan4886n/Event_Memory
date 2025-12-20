@@ -81,6 +81,9 @@ pipeline {
                         }
 
                         // Apply deployment và service
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f auth_service/k8s/postgres-pvc.yml"
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f auth_service/k8s/postgres-deployment.yml"
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f auth_service/k8s/postgres-service.yml"
                         sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f auth_service/k8s/deployment.yml"
                         sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f auth_service/k8s/service.yml"
 
