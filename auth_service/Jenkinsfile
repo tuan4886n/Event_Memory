@@ -1,0 +1,102 @@
+pipeline {
+    agent any
+
+    environment {
+        SERVICE_NAME    = "auth_service"
+        DOCKER_IMAGE    = "memory-${SERVICE_NAME}"
+        DOCKER_REGISTRY = "tuan4886"
+        TAG             = "${env.BUILD_NUMBER ?: 'dev'}"
+        DOCKER_REPO     = "${DOCKER_REGISTRY}/${DOCKER_IMAGE}" 
+    }
+
+    stages {
+        stage('Prepare Env File') {
+            steps {
+                withCredentials([
+                    usernamePassword(credentialsId: 'auth-db-credential-test',
+                                     usernameVariable: 'DB_USER',
+                                     passwordVariable: 'DB_PASS'),
+                    string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET')
+                ]) {
+                    sh '''
+                        echo "POSTGRES_HOST=auth-db-test" > auth_service/tests/.env.db.test
+                        echo "POSTGRES_PORT=5432" >> auth_service/tests/.env.db.test
+                        echo "POSTGRES_DB=test_db" >> auth_service/tests/.env.db.test
+                        echo "POSTGRES_USER=$DB_USER" >> auth_service/tests/.env.db.test
+                        echo "POSTGRES_PASSWORD=$DB_PASS" >> auth_service/tests/.env.db.test
+                        echo "JWT_SECRET=$JWT_SECRET" >> auth_service/tests/.env.db.test
+                        echo "JWT_ALGORITHM=HS256" >> auth_service/tests/.env.db.test
+                        echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> auth_service/tests/.env.db.test
+                    '''
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Starting build and test for auth_service...'
+                dir('auth_service') {
+                    // Dọn container trước khi test
+                    sh 'docker-compose -f docker-compose.auth.test.yml down -v'
+
+                    // Build và chạy test, log kết quả rõ ràng
+                    sh 'docker-compose -f docker-compose.auth.test.yml up --build --exit-code-from auth-service-test'
+                    // Dọn sau test
+                    sh 'docker-compose -f docker-compose.auth.test.yml down -v'
+                }
+            }
+        }
+
+        stage('Build Production Image') {
+            steps {
+                script {
+                    echo "Building Production Image..."
+                    sh "docker build --pull -t ${DOCKER_REPO}:${TAG} -f auth_service/Dockerfile ."
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    echo "Pushing image to Docker Hub..."
+                    withDockerRegistry(credentialsId: 'dockerhub-credentials', url: '') {
+                        // Chỉ push với tag latest
+                        sh "docker tag ${DOCKER_REPO}:${TAG} ${DOCKER_REPO}:latest"
+                        sh "docker push ${DOCKER_REPO}:latest"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    echo "Deploying ${DOCKER_REPO}:latest to Docker Desktop Kubernetes..."
+
+                    withCredentials([file(credentialsId: 'docker-desktop-kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+                        // Apply secret manifest
+                        withCredentials([file(credentialsId: 'k8s-secret-file-auth_service', variable: 'SECRET_FILE')]) {
+                            sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f $SECRET_FILE"
+                        }
+
+                        // Apply deployment và service
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f auth_service/k8s/deployment.yml"
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f auth_service/k8s/service.yml"
+
+                        // Kiểm tra rollout
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE rollout status deployment/auth-service --timeout=60s"
+                    }
+
+                    echo "Deploy lên Docker Desktop Kubernetes thành công!"
+                }
+            }
+        }
+    }
+    post {
+        always {
+            echo "Cleaning workspace..."
+            cleanWs()
+        }
+    }
+}

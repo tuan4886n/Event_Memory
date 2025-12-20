@@ -1,0 +1,41 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# Environment files
+*/tests/.env.db.test
+.env
+.env.local
+*.env
+
+# Docker artifacts
+*.log
+*.pid
+*.db
+*.sqlite3
+.dockerignore
+
+# VS Code settings
+.vscode/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Node
+node_modules/
+
+# variable k8s
+auth_service/k8s/secret.yml

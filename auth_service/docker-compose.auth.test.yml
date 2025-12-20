@@ -1,0 +1,44 @@
+services:
+  auth-service-test:
+    build:
+      context: ..
+      dockerfile: ./auth_service/Dockerfile.test
+    container_name: auth-service-test
+    env_file:
+      - ./tests/.env.db.test
+    environment:
+      PYTHONPATH: /app
+    depends_on:
+      auth-db-test:
+        condition: service_healthy
+        
+    # Lệnh chạy Migration (Tạo bảng) và Pytest
+    command: >
+      /bin/sh -c "
+      echo 'Waiting for Auth DB to start...' && sleep 5 &&
+      /usr/local/bin/python -c \"from app.utils.db import engine, Base; import app.models.user; Base.metadata.create_all(bind=engine); print('DB tables created.')\" &&
+      echo 'Starting Pytest...' &&
+      /usr/local/bin/pytest /app/tests
+      "
+    
+    restart: "no" # Ngăn không cho container khởi động lại sau khi Pytest hoàn thành
+    networks:
+      - auth_test_network
+
+  auth-db-test:
+    image: postgres:15
+    container_name: auth-db-test
+    env_file:
+      - ./tests/.env.db.test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - auth_test_network
+
+networks:
+  auth_test_network:
+    name: auth_test_network
+    driver: bridge
