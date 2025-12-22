@@ -18,7 +18,7 @@ spec:
         - name: auth-service
           image: tuan4886/memory-auth_service:latest
           ports:
-            - containerPort: 5000
+            - containerPort: 8000
           envFrom:
             - secretRef:
                 name: auth-service-secret
