@@ -7,12 +7,12 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - .env.auth
     depends_on:
       auth-db:
         condition: service_healthy
     networks:
-      - auth_network
+      - app_network
 
   auth-db:
     image: postgres:15
@@ -29,11 +29,11 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - auth_network
+      - app_network
 
 volumes:
   auth_db_data:
 
 networks:
-  auth_network:
+  app_network:
     driver: bridge

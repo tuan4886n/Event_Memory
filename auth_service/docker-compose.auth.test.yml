@@ -5,7 +5,7 @@ services:
       dockerfile: ./auth_service/Dockerfile.test
     container_name: auth-service-test
     env_file:
-      - ./tests/.env.db.test
+      - ./tests/.env.db.auth.test
     environment:
       PYTHONPATH: /app
     depends_on:
@@ -29,7 +29,7 @@ services:
     image: postgres:15
     container_name: auth-db-test
     env_file:
-      - ./tests/.env.db.test
+      - ./tests/.env.db.auth.test
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s

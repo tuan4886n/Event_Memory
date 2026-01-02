@@ -11,5 +11,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY ./auth_service/app ./app
 COPY ./auth_service/tests ./tests
 
-EXPOSE 8000
 CMD ["pytest", "-v", "/app/tests"]

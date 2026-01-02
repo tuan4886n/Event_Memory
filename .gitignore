@@ -10,7 +10,8 @@ venv/
 .venv/
 
 # Environment files
-*/tests/.env.db.test
+*/tests/.env.db.auth.test
+.env.auth
 .env
 .env.local
 *.env

@@ -19,21 +19,21 @@ pipeline {
                     string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET')
                 ]) {
                     sh '''
-                        echo "POSTGRES_HOST=auth-db-test" > auth_service/tests/.env.db.test
-                        echo "POSTGRES_PORT=5432" >> auth_service/tests/.env.db.test
-                        echo "POSTGRES_DB=test_db" >> auth_service/tests/.env.db.test
-                        echo "POSTGRES_USER=$DB_USER" >> auth_service/tests/.env.db.test
-                        echo "POSTGRES_PASSWORD=$DB_PASS" >> auth_service/tests/.env.db.test
+                        echo "POSTGRES_HOST=auth-db-test" > auth_service/tests/.env.db.auth.test
+                        echo "POSTGRES_PORT=5432" >> auth_service/tests/.env.db.auth.test
+                        echo "POSTGRES_DB=test_db" >> auth_service/tests/.env.db.auth.test
+                        echo "POSTGRES_USER=$DB_USER" >> auth_service/tests/.env.db.auth.test
+                        echo "POSTGRES_PASSWORD=$DB_PASS" >> auth_service/tests/.env.db.auth.test
 
-                        echo "DB_USER=$DB_USER" >> auth_service/tests/.env.db.test
-                        echo "DB_PASSWORD=$DB_PASS" >> auth_service/tests/.env.db.test
-                        echo "DB_NAME=test_db" >> auth_service/tests/.env.db.test
-                        echo "DB_HOST=auth-db-test" >> auth_service/tests/.env.db.test
-                        echo "DB_PORT=5432" >> auth_service/tests/.env.db.test
+                        echo "DB_USER=$DB_USER" >> auth_service/tests/.env.db.auth.test
+                        echo "DB_PASSWORD=$DB_PASS" >> auth_service/tests/.env.db.auth.test
+                        echo "DB_NAME=test_db" >> auth_service/tests/.env.db.auth.test
+                        echo "DB_HOST=auth-db-test" >> auth_service/tests/.env.db.auth.test
+                        echo "DB_PORT=5432" >> auth_service/tests/.env.db.auth.test
 
-                        echo "SECRET_KEY=$JWT_SECRET" >> auth_service/tests/.env.db.test
-                        echo "ALGORITHM=HS256" >> auth_service/tests/.env.db.test
-                        echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> auth_service/tests/.env.db.test
+                        echo "SECRET_KEY=$JWT_SECRET" >> auth_service/tests/.env.db.auth.test
+                        echo "ALGORITHM=HS256" >> auth_service/tests/.env.db.auth.test
+                        echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> auth_service/tests/.env.db.auth.test
                     '''
                 }
             }
