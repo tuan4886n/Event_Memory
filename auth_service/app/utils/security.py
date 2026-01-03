@@ -17,20 +17,22 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
 
-def create_access_token(username: str):
+def create_access_token(user_id: int, username: str):
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     payload = {
-        "sub": username,
+        "sub": str(user_id),
+        "username": username,
         "exp": expire,
         "iat": datetime.utcnow(),   # thời điểm tạo
         "jti": str(uuid.uuid4())    # mã ngẫu nhiên
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
-def create_refresh_token(username: str):
+def create_refresh_token(user_id: int, username: str):
     expire = datetime.utcnow() + timedelta(days=7)  # refresh token thường dài hơn
     payload = {
-        "sub": username,
+        "sub": str(user_id),
+        "username": username,
         "exp": expire,
         "iat": datetime.utcnow(),
         "jti": str(uuid.uuid4()),
@@ -42,9 +44,10 @@ def create_refresh_token(username: str):
 def verify_token(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
+        user_id: str = payload.get("sub")
+        username: str = payload.get("username")
+        if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid token")
-        return username
+        return {"user_id": int(user_id), "username": username}
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")

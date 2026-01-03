@@ -43,12 +43,16 @@ def test_login_failure(db: Session):
     assert response.json()["detail"] == "Invalid credentials"
 
 def test_me_with_token(db: Session):
-    client.post("/auth/signup", json={"username":"meuser","password":"123"})
+    signup_response = client.post("/auth/signup", json={"username":"meuser","password":"123"})
+    user_id = signup_response.json()["id"]
+
     token = client.post("/auth/login", json={"username":"meuser","password":"123"}).json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
     response = client.get("/auth/me", headers=headers)
+
     assert response.status_code == 200
     assert response.json()["username"] == "meuser"
+    assert response.json()["user_id"] == user_id
 
 def test_me_without_token(db: Session):
     response = client.get("/auth/me")
@@ -56,7 +60,6 @@ def test_me_without_token(db: Session):
     assert response.json()["detail"] == "Not authenticated"
 
 def test_refresh_token_success(db: Session):
-    # Tạo user và login để lấy refresh token
     client.post("/auth/signup", json={"username":"refreshuser","password":"123"})
     login_response = client.post("/auth/login", json={"username":"refreshuser","password":"123"})
     refresh_token = login_response.json()["refresh_token"]

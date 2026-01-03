@@ -1,0 +1,40 @@
+services:
+  event-service-test:
+    build:
+      context: ..
+      dockerfile: ./event_service/Dockerfile.test
+    container_name: event-service-test
+    env_file:
+      - ./tests/.env.db.event.test
+    environment:
+      PYTHONPATH: /app
+    depends_on:
+      event-db-test:
+        condition: service_healthy
+    command: >
+      /bin/sh -c "
+      echo 'Waiting for Event DB to start...' && sleep 5 &&
+      python -c \"from app.db import engine, Base; import app.models; Base.metadata.create_all(bind=engine); print('DB tables created.')\" &&
+      echo 'Starting Pytest...' &&
+      pytest -v /app/tests
+      "
+    restart: "no"
+    networks:
+      - event_test_network
+
+  event-db-test:
+    image: postgres:15
+    container_name: event-db-test
+    env_file:
+      - ./tests/.env.db.event.test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - event_test_network
+
+networks:
+  event_test_network:
+    driver: bridge

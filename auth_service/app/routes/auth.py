@@ -33,13 +33,13 @@ def login(user: UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.username == user.username).first()
     if not db_user or not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    access_token = create_access_token(db_user.username)
-    refresh_token = create_refresh_token(db_user.username)
+    access_token = create_access_token(db_user.id, db_user.username)
+    refresh_token = create_refresh_token(db_user.id, db_user.username)
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 @router.get("/me")
-def me(username: str = Depends(verify_token)):
-    return {"username": username}
+def me(user: dict = Depends(verify_token)):
+    return {"user_id": user["user_id"], "username": user["username"]}
 
 @router.post("/refresh")
 def refresh(refresh_token: str = Body(..., embed=True)):
@@ -47,8 +47,9 @@ def refresh(refresh_token: str = Body(..., embed=True)):
         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
         if payload.get("type") != "refresh":
             raise HTTPException(status_code=401, detail="Invalid token type")
-        username = payload.get("sub")
-        new_access_token = create_access_token(username)
+        user_id = payload.get("sub")
+        username = payload.get("username")
+        new_access_token = create_access_token(user_id, username)
         return {"access_token": new_access_token}
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid refresh token")

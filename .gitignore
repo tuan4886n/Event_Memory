@@ -11,11 +11,14 @@ venv/
 
 # Environment files
 */tests/.env.db.auth.test
+*/tests/.env.db.event.test
 .env.auth
+.env.event
 .env
 .env.local
 *.env
 .env.db.auth
+.env.db.event
 
 # Docker artifacts
 *.log
