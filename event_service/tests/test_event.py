@@ -3,7 +3,7 @@ from app.main import app
 from app.auth import get_current_user
 
 # Override auth để test không cần JWT
-app.dependency_overrides[get_current_user] = lambda: {"user_id": "testuser"}
+app.dependency_overrides[get_current_user] = lambda: {"user_id": 1}
 
 client = TestClient(app)
 
@@ -68,7 +68,7 @@ def test_create_event_unauthorized():
     response = client.post("/events", json=payload)
     assert response.status_code == 401
     # Restore override để các test khác không bị ảnh hưởng
-    app.dependency_overrides[get_current_user] = lambda: {"user_id": "testuser"}
+    app.dependency_overrides[get_current_user] = lambda: {"user_id": 1}
 
 def test_generate_event_qr():
     # Tạo event trước
