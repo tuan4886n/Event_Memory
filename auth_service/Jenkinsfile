@@ -42,7 +42,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Starting build and test for auth_service...'
-                dir('auth_service') {
+                dir("${SERVICE_NAME}") {
                     // Dọn container trước khi test
                     sh 'docker-compose -f docker-compose.auth.test.yml down -v'
 
@@ -88,14 +88,15 @@ pipeline {
                         }
 
                         // Apply deployment và service
-                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f auth_service/k8s/postgres-pvc.yml"
-                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f auth_service/k8s/postgres-deployment.yml"
-                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f auth_service/k8s/postgres-service.yml"
-                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f auth_service/k8s/deployment.yml"
-                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f auth_service/k8s/service.yml"
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f ${SERVICE_NAME}/k8s/namespace.yml"
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n auth apply -f ${SERVICE_NAME}/k8s/postgres-pvc.yml"
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n auth apply -f ${SERVICE_NAME}/k8s/postgres-deployment.yml"
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n auth apply -f ${SERVICE_NAME}/k8s/postgres-service.yml"
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n auth apply -f ${SERVICE_NAME}/k8s/deployment.yml"
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n auth apply -f ${SERVICE_NAME}/k8s/service.yml"
 
                         // Kiểm tra rollout
-                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE rollout status deployment/auth-service --timeout=60s"
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n auth rollout status deployment/auth-service --timeout=180s"
                     }
 
                     echo "Deploy lên Docker Desktop Kubernetes thành công!"

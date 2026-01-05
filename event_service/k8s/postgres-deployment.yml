@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: auth-db
+  name: event-db
   labels:
-    app: auth-db
+    app: event-db
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: auth-db
+      app: event-db
   template:
     metadata:
       labels:
-        app: auth-db
+        app: event-db
     spec:
       containers:
         - name: postgres
@@ -23,22 +23,22 @@ spec:
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: auth-service-secret
+                  name: event-service-secret
                   key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: auth-service-secret
+                  name: event-service-secret
                   key: POSTGRES_PASSWORD
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
-                  name: auth-service-secret
+                  name: event-service-secret
                   key: POSTGRES_DB
           volumeMounts:
-            - name: postgres-storage-auth
+            - name: postgres-storage-event
               mountPath: /var/lib/postgresql/data
       volumes:
-        - name: postgres-storage-auth
+        - name: postgres-storage-event
           persistentVolumeClaim:
-            claimName: postgres-pvc-auth
+            claimName: postgres-pvc-event

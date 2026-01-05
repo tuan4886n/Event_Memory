@@ -44,3 +44,4 @@ node_modules/
 
 # variable k8s
 auth_service/k8s/secret.yml
+event_service/k8s/secret.yml
