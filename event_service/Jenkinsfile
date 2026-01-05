@@ -1,0 +1,113 @@
+pipeline {
+    agent any
+
+    environment {
+        SERVICE_NAME    = "event_service"
+        DOCKER_IMAGE    = "memory-${SERVICE_NAME}"
+        DOCKER_REGISTRY = "tuan4886"
+        TAG             = "${env.BUILD_NUMBER ?: 'dev'}"
+        DOCKER_REPO     = "${DOCKER_REGISTRY}/${DOCKER_IMAGE}" 
+    }
+
+    stages {
+        stage('Prepare Env File') {
+            steps {
+                withCredentials([
+                    usernamePassword(credentialsId: 'event-db-credential-test',
+                                     usernameVariable: 'DB_USER',
+                                     passwordVariable: 'DB_PASS'),
+                    string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET')
+                ]) {
+                    sh '''
+                        echo "POSTGRES_HOST=event-db-test" > event_service/tests/.env.db.event.test
+                        echo "POSTGRES_PORT=5432" >> event_service/tests/.env.db.event.test
+                        echo "POSTGRES_DB=event_test_db" >> event_service/tests/.env.db.event.test
+                        echo "POSTGRES_USER=$DB_USER" >> event_service/tests/.env.db.event.test
+                        echo "POSTGRES_PASSWORD=$DB_PASS" >> event_service/tests/.env.db.event.test
+
+                        echo "DB_USER=$DB_USER" >> event_service/tests/.env.db.event.test
+                        echo "DB_PASSWORD=$DB_PASS" >> event_service/tests/.env.db.event.test
+                        echo "DB_NAME=event_test_db" >> event_service/tests/.env.db.event.test
+                        echo "DB_HOST=event-db-test" >> event_service/tests/.env.db.event.test
+                        echo "DB_PORT=5432" >> event_service/tests/.env.db.event.test
+
+                        echo "SECRET_KEY=$JWT_SECRET" >> event_service/tests/.env.db.event.test
+                        echo "ALGORITHM=HS256" >> event_service/tests/.env.db.event.test
+                        echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> event_service/tests/.env.db.event.test
+                    '''
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Starting build and test for event_service...'
+                dir("${SERVICE_NAME}") {
+                    // Dọn container trước khi test
+                    sh 'docker-compose -f docker-compose.event.test.yml down -v'
+
+                    // Build và chạy test, log kết quả rõ ràng
+                    sh 'docker-compose -f docker-compose.event.test.yml up --build --exit-code-from event-service-test'
+                    // Dọn sau test
+                    sh 'docker-compose -f docker-compose.event.test.yml down -v'
+                }
+            }
+        }
+
+        stage('Build Production Image') {
+            steps {
+                script {
+                    echo "Building Production Image..."
+                    sh "docker build --pull -t ${DOCKER_REPO}:${TAG} -f ${SERVICE_NAME}/Dockerfile ."
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    echo "Pushing image to Docker Hub..."
+                    withDockerRegistry(credentialsId: 'dockerhub-credentials', url: '') {
+                        // Chỉ push với tag latest
+                        sh "docker tag ${DOCKER_REPO}:${TAG} ${DOCKER_REPO}:latest"
+                        sh "docker push ${DOCKER_REPO}:latest"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    echo "Deploying ${DOCKER_REPO}:latest to Docker Desktop Kubernetes..."
+                    withCredentials([file(credentialsId: 'docker-desktop-kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f ${SERVICE_NAME}/k8s/namespace.yml"
+                        // Apply secret manifest
+                        withCredentials([file(credentialsId: 'k8s-secret-file-event_service', variable: 'SECRET_FILE')]) {
+                            sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f $SECRET_FILE"
+                        }
+
+                        // Apply deployment và service
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n event apply -f ${SERVICE_NAME}/k8s/postgres-pvc.yml"
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n event apply -f ${SERVICE_NAME}/k8s/postgres-deployment.yml"
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n event apply -f ${SERVICE_NAME}/k8s/postgres-service.yml"
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n event apply -f ${SERVICE_NAME}/k8s/deployment.yml"
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n event apply -f ${SERVICE_NAME}/k8s/service.yml"
+
+                        // Kiểm tra rollout
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n event rollout status deployment/event-service --timeout=180s"
+                    }
+
+                    echo "Deploy lên Docker Desktop Kubernetes thành công!"
+                }
+            }
+        }
+    }
+    post {
+        always {
+            echo "Cleaning workspace..."
+            cleanWs()
+        }
+    }
+}
