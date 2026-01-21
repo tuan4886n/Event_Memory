@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gallery-service
+  labels:
+    app: gallery-service
+  namespace: gallery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gallery-service
+  template:
+    metadata:
+      labels:
+        app: gallery-service
+    spec:
+      containers:
+        - name: gallery-service
+          image: tuan4886/memory-gallery_service:latest
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: gallery-service-secret
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"

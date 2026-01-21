@@ -1,0 +1,41 @@
+services:
+  gallery-service:
+    build:
+      context: ..
+      dockerfile: ./gallery_service/Dockerfile
+    container_name: gallery_service
+    ports:
+      - "8002:8000"
+    env_file:
+      - .env.gallery
+    volumes:
+      - ./gallery_service/uploads:/app/uploads
+    depends_on:
+      gallery-db:
+        condition: service_healthy
+    networks:
+      - app_network
+  
+  gallery-db:
+    image: postgres:15
+    container_name: gallery-db
+    env_file:
+      - .env.db.gallery
+    ports:
+      - "5434:5432"
+    volumes:
+      - gallery_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
+
+volumes:
+  gallery_db_data:
+
+networks:
+  app_network:
+    driver: bridge

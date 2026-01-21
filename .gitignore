@@ -8,17 +8,21 @@ __pycache__/
 venv/
 .env/
 .venv/
+*/gallery_service/uploads/
 
 # Environment files
 */tests/.env.db.auth.test
 */tests/.env.db.event.test
+*/tests/.env.db.gallery.test
 .env.auth
 .env.event
+.env.gallery
 .env
 .env.local
 *.env
 .env.db.auth
 .env.db.event
+.env.db.gallery
 
 # Docker artifacts
 *.log
@@ -45,3 +49,4 @@ node_modules/
 # variable k8s
 auth_service/k8s/secret.yml
 event_service/k8s/secret.yml
+gallery_service/k8s/secret.yml

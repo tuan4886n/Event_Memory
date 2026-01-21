@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gallery-db
+  labels:
+    app: gallery-db
+  namespace: gallery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gallery-db
+  template:
+    metadata:
+      labels:
+        app: gallery-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: gallery-service-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gallery-service-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: gallery-service-secret
+                  key: POSTGRES_DB
+          volumeMounts:
+            - name: postgres-storage-gallery
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-storage-gallery
+          persistentVolumeClaim:
+            claimName: postgres-pvc-gallery
