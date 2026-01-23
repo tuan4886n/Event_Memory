@@ -1,0 +1,384 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* Shadcn default colors for dark mode, user's light themes take precedence for light mode */
+/* The user's :root effectively serves as a default light theme (Elegant),
+   so we introduce the dark theme here. Any variables not explicitly defined
+   in the user's themes will fall back to Shadcn's defaults if present,
+   but user's existing theme variables take precedence. */
+:root {
+  /* Shadcn default variables not present in user's themes, or if user's :root is not the primary theme */
+  /* Since user has a specific :root theme, we only add shadcn-specific variables not in existing themes */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+  /* The user's existing radius will take precedence */
+}
+ 
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --radius: 0.625rem; /* Shadcn default radius for dark theme */
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+/* Theme: Elegant - White & Gold (Wedding) */
+/* This theme now overrides the default :root for light mode where applicable */
+:root,
+.theme-elegant {
+  --background: #fdfcfa;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --primary: #c9a961;
+  --primary-foreground: #1a1a1a;
+  --secondary: #f5f3ef;
+  --secondary-foreground: #1a1a1a;
+  --muted: #f5f3ef;
+  --muted-foreground: #6b6b6b;
+  --accent: #d4b872;
+  --accent-foreground: #1a1a1a;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e8e4dc;
+  --input: #e8e4dc;
+  --ring: #c9a961;
+  --radius: 0.5rem;
+  
+  /* Custom event theme variables */
+  --header-bg: linear-gradient(180deg, rgba(253,252,250,0.95) 0%, rgba(253,252,250,0.8) 100%);
+  --fab-bg: linear-gradient(135deg, #c9a961 0%, #d4b872 100%);
+  --fab-shadow: 0 8px 32px rgba(201, 169, 97, 0.4);
+  --wish-card-bg: #ffffff;
+  --overlay-bg: rgba(253,252,250,0.9);
+  --gradient-start: #c9a961;
+  --gradient-end: #d4b872;
+}
+
+/* Theme: Vibrant - Bright Gradients (Birthday/Party) */
+.theme-vibrant {
+  --background: #fef7f0;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --primary: #f97316;
+  --primary-foreground: #ffffff;
+  --secondary: #fef3c7;
+  --secondary-foreground: #1a1a1a;
+  --muted: #fef3c7;
+  --muted-foreground: #6b6b6b;
+  --accent: #ec4899;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #fed7aa;
+  --input: #fed7aa;
+  --ring: #f97316;
+  --radius: 1rem;
+  
+  /* Custom event theme variables */
+  --header-bg: linear-gradient(180deg, rgba(254,247,240,0.95) 0%, rgba(254,247,240,0.8) 100%);
+  --fab-bg: linear-gradient(135deg, #f97316 0%, #ec4899 50%, #8b5cf6 100%);
+  --fab-shadow: 0 8px 32px rgba(249, 115, 22, 0.5);
+  --wish-card-bg: linear-gradient(135deg, #fff7ed 0%, #fef3c7 100%);
+  --overlay-bg: rgba(254,247,240,0.9);
+  --gradient-start: #f97316;
+  --gradient-end: #ec4899;
+}
+
+/* Theme: Moody - Dark/Deep Tones (Emotional/Deep) */
+.theme-moody {
+  --background: #0f0f0f;
+  --foreground: #e5e5e5;
+  --card: #1a1a1a;
+  --card-foreground: #e5e5e5;
+  --popover: #1a1a1a;
+  --popover-foreground: #e5e5e5;
+  --primary: #a78bfa;
+  --primary-foreground: #0f0f0f;
+  --secondary: #262626;
+  --secondary-foreground: #e5e5e5;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --accent: #6366f1;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #333333;
+  --input: #333333;
+  --ring: #a78bfa;
+  --radius: 0.75rem;
+  
+  /* Custom event theme variables */
+  --header-bg: linear-gradient(180deg, rgba(15,15,15,0.98) 0%, rgba(15,15,15,0.9) 100%);
+  --fab-bg: linear-gradient(135deg, #6366f1 0%, #a78bfa 100%);
+  --fab-shadow: 0 8px 32px rgba(99, 102, 241, 0.4);
+  --wish-card-bg: #1a1a1a;
+  --overlay-bg: rgba(15,15,15,0.95);
+  --gradient-start: #6366f1;
+  --gradient-end: #a78bfa;
+}
+
+@theme inline {
+  --font-sans: 'Playfair Display', 'Geist', 'Geist Fallback';
+  --font-serif: 'Playfair Display', serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  /* Added Shadcn chart colors */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  /* Added Shadcn sidebar colors */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Smooth theme transitions */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Masonry Grid Styles */
+.masonry-grid {
+  column-count: 2;
+  column-gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .masonry-grid {
+    column-count: 3;
+    column-gap: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .masonry-grid {
+    column-count: 4;
+    column-gap: 1rem;
+  }
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .masonry-item {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
+}
+
+/* Animation keyframes */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Slideshow specific animations */
+@keyframes slideshow-fade-in {
+  0% { opacity: 0; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideshow-fade-out {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.98); }
+}
+
+@keyframes slideshow-zoom {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.08); }
+}
+
+@keyframes text-reveal {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes caption-slide {
+  0% { opacity: 0; transform: translateX(20px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(var(--primary), 0.3); }
+  50% { box-shadow: 0 0 40px rgba(var(--primary), 0.6); }
+}
+
+.slideshow-enter {
+  animation: slideshow-fade-in 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.slideshow-exit {
+  animation: slideshow-fade-out 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.slideshow-zoom {
+  animation: slideshow-zoom 8s ease-out forwards;
+}
+
+.text-reveal {
+  animation: text-reveal 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: 0.5s;
+  opacity: 0;
+}
+
+.caption-slide {
+  animation: caption-slide 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: 1s;
+  opacity: 0;
+}
+
+/* Slideshow theme-specific text styles */
+.slideshow-elegant .wish-text {
+  text-shadow: 2px 2px 20px rgba(0,0,0,0.3), 0 0 60px rgba(201, 169, 97, 0.4);
+}
+
+.slideshow-vibrant .wish-text {
+  text-shadow: 2px 2px 20px rgba(0,0,0,0.5), 0 0 40px rgba(249, 115, 22, 0.5);
+}
+
+.slideshow-moody .wish-text {
+  text-shadow: 2px 2px 30px rgba(0,0,0,0.8), 0 0 60px rgba(99, 102, 241, 0.3);
+}
+
+/* Admin Dashboard Theme - Technical Dark UI */
+.admin-theme {
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #141414;
+  --card-foreground: #fafafa;
+  --popover: #141414;
+  --popover-foreground: #fafafa;
+  --primary: #fafafa;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1f1f1f;
+  --secondary-foreground: #fafafa;
+  --muted: #1f1f1f;
+  --muted-foreground: #a1a1aa;
+  --accent: #3b82f6;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #27272a;
+  --input: #27272a;
+  --ring: #3b82f6;
+  --radius: 0.5rem;
+  
+  /* Admin specific variables */
+  --admin-sidebar-bg: #0a0a0a;
+  --admin-sidebar-border: #1f1f1f;
+  --admin-header-bg: #0a0a0a;
+  --admin-success: #22c55e;
+  --admin-warning: #eab308;
+  --admin-info: #3b82f6;
+  --admin-purple: #a855f7;
+}

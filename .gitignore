@@ -50,3 +50,32 @@ node_modules/
 auth_service/k8s/secret.yml
 event_service/k8s/secret.yml
 gallery_service/k8s/secret.yml
+
+# ------ Frontend ---------
+
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Next.js Build Output
+/.next/
+/out/
+/build
+
+# Environment Variables 
+.env
+.env*.local
+
+# Debug Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# IDE & OS Rác
+.DS_Store
+*.pem
+Thumbs.db
+.vscode/
+.idea/
