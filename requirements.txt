@@ -13,3 +13,5 @@ requests
 httpx
 PyJWT
 Pillow
+email-validator
+alembic>=1.13.1

@@ -79,3 +79,6 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
+
+# Alembic
+**/alembic/versions/__pycache__/
