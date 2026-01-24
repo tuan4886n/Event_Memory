@@ -11,7 +11,12 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./auth_service/app ./app
+COPY ./auth_service/alembic.ini ./alembic.ini
+COPY ./auth_service/alembic ./alembic
+COPY ./auth_service/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 8000
 
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["gunicorn", "app.main:app", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000", "--timeout", "60"]

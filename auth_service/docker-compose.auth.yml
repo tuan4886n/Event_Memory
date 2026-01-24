@@ -8,6 +8,8 @@ services:
       - "8000:8000"
     env_file:
       - .env.auth
+    volumes:
+      - ./alembic/versions:/app/alembic/versions
     depends_on:
       auth-db:
         condition: service_healthy
