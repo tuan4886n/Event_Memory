@@ -5,6 +5,7 @@ from alembic import context
 
 # Import Base từ project của bạn
 from app.utils.db import Base
+from app.models.user import User
 
 # Alembic Config object
 config = context.config
