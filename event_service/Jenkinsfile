@@ -19,21 +19,27 @@ pipeline {
                     string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET')
                 ]) {
                     sh '''
-                        echo "POSTGRES_HOST=event-db-test" > event_service/tests/.env.db.event.test
-                        echo "POSTGRES_PORT=5432" >> event_service/tests/.env.db.event.test
-                        echo "POSTGRES_DB=event_test_db" >> event_service/tests/.env.db.event.test
-                        echo "POSTGRES_USER=$DB_USER" >> event_service/tests/.env.db.event.test
-                        echo "POSTGRES_PASSWORD=$DB_PASS" >> event_service/tests/.env.db.event.test
+                        # Tạo file env cho Test
+                        ENV_FILE="event_service/tests/.env.db.event.test"
+                        echo "DB_USER=$DB_USER" > $ENV_FILE
+                        echo "DB_PASSWORD=$DB_PASS" >> $ENV_FILE
+                        echo "DB_NAME=event_test_db" >> $ENV_FILE
+                        echo "DB_HOST=event-db-test" >> $ENV_FILE
+                        echo "DB_PORT=5432" >> $ENV_FILE
+                        
+                        # DÒNG QUAN TRỌNG NHẤT CHO ALEMBIC:
+                        echo "DATABASE_URL=postgresql://$DB_USER:$DB_PASS@event-db-test:5432/event_test_db" >> $ENV_FILE
 
-                        echo "DB_USER=$DB_USER" >> event_service/tests/.env.db.event.test
-                        echo "DB_PASSWORD=$DB_PASS" >> event_service/tests/.env.db.event.test
-                        echo "DB_NAME=event_test_db" >> event_service/tests/.env.db.event.test
-                        echo "DB_HOST=event-db-test" >> event_service/tests/.env.db.event.test
-                        echo "DB_PORT=5432" >> event_service/tests/.env.db.event.test
+                        echo "POSTGRES_USER=$DB_USER" >> $ENV_FILE
+                        echo "POSTGRES_PASSWORD=$DB_PASS" >> $ENV_FILE
+                        echo "POSTGRES_DB=event_test_db" >> $ENV_FILE
 
-                        echo "SECRET_KEY=$JWT_SECRET" >> event_service/tests/.env.db.event.test
-                        echo "ALGORITHM=HS256" >> event_service/tests/.env.db.event.test
-                        echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> event_service/tests/.env.db.event.test
+                        echo "SECRET_KEY=$JWT_SECRET" >> $ENV_FILE
+                        echo "ALGORITHM=HS256" >> $ENV_FILE
+                        echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> $ENV_FILE
+                        
+                        # Copy sang file .env.event để app và alembic dùng chung trong container test
+                        cp $ENV_FILE event_service/.env.event
                     '''
                 }
             }
@@ -41,35 +47,23 @@ pipeline {
 
         stage('Test') {
             steps {
-                echo 'Starting build and test for event_service...'
+                echo "Starting build and test for ${SERVICE_NAME}..."
                 dir("${SERVICE_NAME}") {
-                    // Dọn container trước khi test
                     sh 'docker-compose -f docker-compose.event.test.yml down -v'
-
-                    // Build và chạy test, log kết quả rõ ràng
                     sh 'docker-compose -f docker-compose.event.test.yml up --build --exit-code-from event-service-test'
-                    // Dọn sau test
                     sh 'docker-compose -f docker-compose.event.test.yml down -v'
                 }
             }
         }
 
-        stage('Build Production Image') {
+        stage('Build & Push Production Image') {
             steps {
                 script {
-                    echo "Building Production Image..."
-                    sh "docker build --pull -t ${DOCKER_REPO}:${TAG} -f ${SERVICE_NAME}/Dockerfile ."
-                }
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                script {
-                    echo "Pushing image to Docker Hub..."
+                    // Build image - Đảm bảo lệnh COPY trong Dockerfile bốc được thư mục alembic/
+                    sh "docker build --pull -t ${DOCKER_REPO}:${TAG} -t ${DOCKER_REPO}:latest -f event_service/Dockerfile ."
+                    
                     withDockerRegistry(credentialsId: 'dockerhub-credentials', url: '') {
-                        // Chỉ push với tag latest
-                        sh "docker tag ${DOCKER_REPO}:${TAG} ${DOCKER_REPO}:latest"
+                        sh "docker push ${DOCKER_REPO}:${TAG}"
                         sh "docker push ${DOCKER_REPO}:latest"
                     }
                 }
@@ -79,31 +73,33 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    echo "Deploying ${DOCKER_REPO}:latest to Docker Desktop Kubernetes..."
+                    echo "Deploying to Kubernetes..."
                     withCredentials([file(credentialsId: 'docker-desktop-kubeconfig', variable: 'KUBECONFIG_FILE')]) {
-
+                        // Apply toàn bộ cấu hình K8s
                         sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f ${SERVICE_NAME}/k8s/namespace.yml"
-                        // Apply secret manifest
+                        // Apply secrets
                         withCredentials([file(credentialsId: 'k8s-secret-file-event_service', variable: 'SECRET_FILE')]) {
                             sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f $SECRET_FILE"
                         }
 
-                        // Apply deployment và service
-                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n event apply -f ${SERVICE_NAME}/k8s/postgres-pvc.yml"
-                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n event apply -f ${SERVICE_NAME}/k8s/postgres-deployment.yml"
-                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n event apply -f ${SERVICE_NAME}/k8s/postgres-service.yml"
-                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n event apply -f ${SERVICE_NAME}/k8s/deployment.yml"
-                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n event apply -f ${SERVICE_NAME}/k8s/service.yml"
+                        // Sử dụng mảng để apply cho gọn và sạch
+                        def k8sFiles = [
+                            'postgres-pvc.yml', 'postgres-deployment.yml', 'postgres-service.yml',
+                            'deployment.yml', 'service.yml'
+                        ]
+                        for (file in k8sFiles) {
+                            sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n event apply -f ${SERVICE_NAME}/k8s/${file}"
+                        }
 
-                        // Kiểm tra rollout
+                        // Force restart deployment để nhận image mới nhất nếu tag là 'latest'
+                        sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n event rollout restart deployment/event-service"
                         sh "kubectl --kubeconfig=$KUBECONFIG_FILE -n event rollout status deployment/event-service --timeout=180s"
                     }
-
-                    echo "Deploy lên Docker Desktop Kubernetes thành công!"
                 }
             }
         }
     }
+    
     post {
         always {
             echo "Cleaning workspace..."
