@@ -9,6 +9,7 @@ class Album(Base):
     name = Column(String(255), nullable=False)
     description = Column(String, nullable=True)
     event_id = Column(Integer, nullable=False)
+    created_by = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     media_items = relationship(

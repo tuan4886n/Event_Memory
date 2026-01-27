@@ -1,9 +1,17 @@
+import pytest
 from fastapi.testclient import TestClient
 from app.main import app
+from app.auth import get_current_user
 import io
 from PIL import Image
 
 client = TestClient(app)
+
+# Giả lập user để pass qua Depends(get_current_user)
+def override_get_current_user():
+    return {"user_id": 1, "role": "admin", "username": "test_devops"}
+
+app.dependency_overrides[get_current_user] = override_get_current_user
 
 # Biến global để lưu ID album và media
 created_album_id = None
@@ -30,7 +38,7 @@ def test_health_check():
 def test_create_album():
     """Tạo album để dùng cho các test media"""
     global created_album_id
-    response = client.post("/albums", json={"name": "Test Album", "event_id": 1})
+    response = client.post("/albums/", json={"name": "Test Album", "event_id": 1})
     assert response.status_code == 200
     data = response.json()
     assert "id" in data

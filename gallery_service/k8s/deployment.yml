@@ -23,6 +23,9 @@ spec:
           envFrom:
             - secretRef:
                 name: gallery-service-secret
+          volumeMounts:
+            - name: media-storage
+              mountPath: /app/uploads
           resources:
             requests:
               cpu: "100m"
@@ -30,3 +33,7 @@ spec:
             limits:
               cpu: "250m"
               memory: "256Mi"
+      volumes:
+        - name: media-storage
+          persistentVolumeClaim:
+            claimName: media-pvc

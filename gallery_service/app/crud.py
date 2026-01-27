@@ -3,10 +3,9 @@ import app.models as models
 import app.schemas as schemas
 
 # Album CRUD
-
-def create_album(db: Session, album: schemas.AlbumCreate):
-    """Tạo album mới"""
-    db_album = models.Album(**album.model_dump())
+def create_album(db: Session, album: schemas.AlbumCreate, created_by: int):
+    """Tạo album mới, gắn với user tạo"""
+    db_album = models.Album(**album.model_dump(), created_by=created_by)
     db.add(db_album)
     db.commit()
     db.refresh(db_album)
@@ -15,6 +14,10 @@ def create_album(db: Session, album: schemas.AlbumCreate):
 def get_album_by_event(db: Session, event_id: int):
     """Lấy album theo event_id"""
     return db.query(models.Album).filter(models.Album.event_id == event_id).first()
+
+def get_album(db: Session, album_id: int):
+    """Lấy album theo id"""
+    return db.query(models.Album).filter(models.Album.id == album_id).first()
 
 def delete_album(db: Session, album_id: int):
     """Xóa album theo id"""
@@ -26,7 +29,6 @@ def delete_album(db: Session, album_id: int):
     return True
 
 # Media CRUD
-
 def add_media(db: Session, media: schemas.MediaCreate, album_id: int):
     """Thêm media vào album"""
     db_media = models.Media(**media.model_dump(), album_id=album_id)

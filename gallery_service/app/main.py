@@ -6,7 +6,6 @@ from app.routes import album, media, health
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    Base.metadata.create_all(bind=engine, checkfirst=True)
     yield
 
 app = FastAPI(title="Gallery Service", version="0.1.0", lifespan=lifespan)

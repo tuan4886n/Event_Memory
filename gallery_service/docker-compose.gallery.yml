@@ -10,6 +10,7 @@ services:
       - .env.gallery
     volumes:
       - ./gallery_service/uploads:/app/uploads
+      - ./alembic/versions:/app/alembic/versions
     depends_on:
       gallery-db:
         condition: service_healthy
